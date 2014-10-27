@@ -87,17 +87,17 @@ def rotateCartesianBasis(positionVectorCartesian, southPoleCoordinates):
     '''Function rotating the planet-centered Cartesian basis of the input vector. The rotation angles are specified vie entering the coordinates of the point that will end on the south pole after the rotation.'''
     southPoleLon = southPoleCoordinates[0]
     southPoleLat = southPoleCoordinates[1]
-    angle1 = np.radians(-(90.+southPoleLon))
+    angle1 = np.radians(southPoleLon)
     angle2 = np.radians((90.+southPoleLat))
     #Rotate about the z-axis
     rotationMatrix1 = np.array([[ np.cos(angle1), np.sin(angle1),  0.0],
                                 [-np.sin(angle1), np.cos(angle1),  0.0],
-                                [0.0,                  0.0,                  1.0]
+                                [0.0,             0.0,             1.0]
                                ])
-    #Rotation about the x-axis
-    rotationMatrix2 = np.array([[1.0,          0.0,                  0.0],
-                                [0.0,          np.cos(angle2),  np.sin(angle2)],
-                                [0.0,         -np.sin(angle2),  np.cos(angle2)]
+    #Rotation about the y-axis
+    rotationMatrix2 = np.array([[np.cos(angle2),  0.0,             np.sin(angle2)],
+                                [0.0,             1.0,             0.0],
+                                [-np.sin(angle2), 0.0,             np.cos(angle2)]
                                ])
     rotationMatrix = np.dot(rotationMatrix2,rotationMatrix1)
     rotatedCoords = np.dot(rotationMatrix, np.array(positionVectorCartesian))
