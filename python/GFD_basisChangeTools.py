@@ -163,6 +163,17 @@ def lonlatradius_2_unitDisk(positionVectorLonLatRad, surfaceRadius=6.37101e+06, 
     Z = surfaceRadius - radius
     return [X,Y,Z]
 
+def lonlat_2_OSGB36(positionVectorLonLat):
+    '''Convert longitude-latitude coordinates into Ordnance Survey (OSGB36, EPSG:27700) coonrdinates.'''
+    trueOriginNorthing = -100e3 #in meters
+    trueOriginEasting = 400e3 #in meters
+    centralMeridianScaleFactor = 0.9996012717
+    trueOriginLatitude = 49.00 #in degrees
+    trueOriginLongitude = 2.00 #in degrees
+    semiMajorAxisLength = 6377563.369 #in meters
+    semiMinorAxisLength = 6356256.909 #in meters
+    eccentricitySquared = (semiMajorAxisLength**2 - semiMinorAxisLength**2)/semiMajorAxisLength**2
+
 def transform_tensor_sphericalPolar_2_cartesian(positionVectorSpherical, tensor):
     '''Function changing the basis of a tensor from zonal-meridional-radial basis to a Cartesian basis.
 
