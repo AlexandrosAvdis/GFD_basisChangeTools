@@ -164,15 +164,48 @@ def lonlatradius_2_unitDisk(positionVectorLonLatRad, surfaceRadius=6.37101e+06, 
     return [X,Y,Z]
 
 def lonlat_2_OSGB36(positionVectorLonLat):
-    '''Convert longitude-latitude coordinates into Ordnance Survey (OSGB36, EPSG:27700) coonrdinates.'''
-    trueOriginNorthing = -100e3 #in meters
-    trueOriginEasting = 400e3 #in meters
-    centralMeridianScaleFactor = 0.9996012717
-    trueOriginLatitude = 49.00 #in degrees
-    trueOriginLongitude = 2.00 #in degrees
-    semiMajorAxisLength = 6377563.369 #in meters
-    semiMinorAxisLength = 6356256.909 #in meters
-    eccentricitySquared = (semiMajorAxisLength**2 - semiMinorAxisLength**2)/semiMajorAxisLength**2
+    '''Convert longitude-latitude coordinates (in degrees) into Ordnance Survey (OSGB36, EPSG:27700) coonrdinates.'''
+    trueOriginNorthing = np.double(-100e3) #in meters
+    trueOriginEasting = np.double(400e3) #in meters
+    centralMeridianScaleFactor = np.double(0.9996012717)
+    trueOriginLatitude = np.double(49.00) #in degrees
+    trueOriginLatitude = radians(trueOriginLatitude)
+    trueOriginLongitude = np.double(-2.00) #in degrees
+    trueOriginLongitude = radians(trueOriginLongitude)
+    semiMajorAxisLength = np.double(6377563.396) #in meters
+    semiMinorAxisLength = np.double(6356256.909) #in meters
+    eccentricitySquared = (np.power(semiMajorAxisLength,2.) - np.power(semiMinorAxisLength,2.))/np.power(semiMajorAxisLength,2.)
+    longitude = radians(positionVectorLonLat[0])
+    latitude = radians(positionVectorLonLat[1])
+    n = (semiMajorAxisLength - semiMinorAxisLength)/(semiMajorAxisLength + semiMinorAxisLength)
+    nu = semiMajorAxisLength*centralMeridianScaleFactor*np.power(1. - eccentricitySquared*np.power(sin(latitude),2.0), -0.5)
+    rho = semiMajorAxisLength*centralMeridianScaleFactor*(1. - eccentricitySquared)*np.power(1. - eccentricitySquared*np.power(sin(latitude),2.), -1.5)
+    etaSquared = (nu/rho) - 1.0
+    M = semiMinorAxisLength*centralMeridianScaleFactor*(
+            (1. + n + (5./4.)*np.power(n,2.) + (5./4.)*np.power(n,3.))*(latitude - trueOriginLatitude) - \
+            (3.*n + 3.*n**2 + (21./8.)*n**3)*sin(latitude - trueOriginLatitude)*cos(latitude + trueOriginLatitude) + \
+            ((15./8.)*n**2 + (15./8.)*n**3)*sin(2.*(latitude - trueOriginLatitude))*cos(2.*(latitude + trueOriginLatitude)) - \
+            (35./24.)*(n**3)*sin(3.*(latitude - trueOriginLatitude))*cos(3.*(latitude + trueOriginLatitude)) \
+                                                       )
+    I = M + trueOriginNorthing
+    II = (nu/2.)*sin(latitude)*cos(latitude)
+    III = (nu/24.)*sin(latitude)*np.power(cos(latitude),3.)*(5. - np.power(tan(latitude),2.) + 9.*etaSquared)
+    IIIA = (nu/720.)*sin(latitude)*np.power(cos(latitude),5.)*(61. - 58.*np.power(tan(latitude),2.) + np.power(tan(latitude),4.))
+    IV = nu*cos(latitude)
+    V = (nu/6.)*np.power(cos(latitude),3.)*(nu/rho - np.power(tan(latitude),2.))
+    VI = (nu/120.)*np.power(cos(latitude),5.)*(5. - 18.*np.power(tan(latitude),2.) + \
+                                          np.power(tan(latitude),4.) + \
+                                          14.*etaSquared - \
+                                          58.*np.power(tan(latitude),2.)*etaSquared )
+    N = I + \
+        II*np.power((longitude - trueOriginLongitude),2.) + \
+        III*np.power((longitude - trueOriginLongitude),4.) + \
+        IIIA*np.power((longitude - trueOriginLongitude),6.)
+    E = trueOriginEasting + \
+        IV*(longitude - trueOriginLongitude) + \
+        V*np.power((longitude - trueOriginLongitude),3.) + \
+        VI*np.power((longitude - trueOriginLongitude),5.)
+    return [E,N]
 
 def transform_tensor_sphericalPolar_2_cartesian(positionVectorSpherical, tensor):
     '''Function changing the basis of a tensor from zonal-meridional-radial basis to a Cartesian basis.
