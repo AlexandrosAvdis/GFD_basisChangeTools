@@ -1,6 +1,6 @@
 GFD_basisChangeTools
 ====================
 
-A suite of basic coordinate reference system tranformation python functions, common in geophysics and geophysical computational science.
+A collection of coordinate reference system transformation functions, for geophysics and geophysical computational science. Written in Python.
 
 GPL v3.
