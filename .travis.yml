@@ -1,0 +1,16 @@
+language: python
+
+python:
+  - "2.7"
+  
+install:
+  - pip install
+
+deploy:
+  skip_cleanup: true
+  # Install twine
+  - pip install twine
+  # Create a source distribution
+  - python setup.py sdist
+  # Upload to pypi
+  - twine upload dist/*
