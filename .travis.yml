@@ -6,8 +6,7 @@ python:
 install:
   - pip install
 
-deploy:
-  skip_cleanup: true
+script:
   # Install twine
   - pip install twine
   # Create a source distribution
