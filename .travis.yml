@@ -7,9 +7,4 @@ install:
   - pip install .
 
 script:
-  # Install twine
-  - pip install twine
-  # Create a source distribution
-  - python setup.py sdist
-  # Upload to pypi
-  - twine upload dist/*
+  - ./CI/ci.sh
