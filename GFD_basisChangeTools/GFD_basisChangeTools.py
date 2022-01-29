@@ -62,9 +62,14 @@ The origin of the Cartesian frame of reference is located at the centre of the s
     return positionVectorLonlat
 
 def lonlatradius_2_cartesian(positionVectorLonLatRad):
-    '''Convert longitude-latitude-radial coordinates on the surface of the Earth (in degrees) to Cartesian coordinates. Longitude and latitude must be in degrees.
+    '''Convert longitude-latitude-radial coordinates to Cartesian coordinates.
 
-The origin of the Cartesian frame of reference is located at the centre of the sphere, the positive half of x-axis goes through 0 deg E, 0 deg N, the positive half of y-axis goes through 90 deg E, 0 deg N and the positive half of the z-axis goes through the North Pole equivalent.'''
+    Longitude and latitude must be in degrees. The origin of the Cartesian
+    frame of reference is located at the centre of the sphere, the positive
+    half of x-axis goes through 0 deg E, 0 deg N, the positive half of y-axis
+    goes through 90 deg E, 0 deg N and the positive half of the z-axis goes
+    through the North Pole equivalent.
+    '''
     #Calculate spherical-polar coordinates form longitude-latitude-radius.
     [radius, theta, phi] = lonlatradius_2_sphericalPolar(positionVectorLonLatRad)
     #Calculate Cartesian coordinates from spherical-polar coordinates.
@@ -72,36 +77,49 @@ The origin of the Cartesian frame of reference is located at the centre of the s
     return [x, y, z]
 
 def lonlatradius_2_sphericalPolar(positionVectorLonLatRad):
-    '''Convert longitude-latitude-radial coordinates on the surface of the Earth (in degrees) to Cartesian coordinates. Longitude and latitude must be in degrees, the azimuthal and polar angles are returned in radians.'''
+    '''Convert longitude-latitude-radial coordinates to spherical-polar coordinates.
+
+    Longitude and latitude must be in degrees, the azimuthal (phi) and polar (theta)
+    angles are returned in radians.
+    '''
     [longitude, latitude, radius] = positionVectorLonLatRad
     #Calculate azimuthal (phi), polar (theta) angles.
     phi = np.radians(longitude)
     theta = pi/2. - np.radians(latitude)
     return [radius, theta, phi]
 
-def cartesian_2_polarStereographic(positionVectorCartesian, surfaceRadius=6.37101e+06, southPoleCoordinates=None):
-    '''Convert Cartesian coordinates on a sphere to polar stereographic, where the stereographic plane is tangent to the north pole. The output coordinates are also normalised with the sphere diameter. If the southPoleCoordinates argument is specified the input coordinates basis is rotated.'''
+def cartesian_2_polarStereographic(positionVectorCartesian, surfaceRadius=6.37101e+06, southPoleCoordinates=None, normalise=True):
+    '''Convert Cartesian coordinates on a sphere to polar stereographic
+
+    The stereographic plane is tangent to the north pole. The input
+    coordinates are also normalised with the sphere diameter, unless the
+    normalise variable is set to False. If the southPoleCoordinates
+    argument is specified the input coordinates basis is rotated.
+    '''
     x = np.double(positionVectorCartesian[0])
     y = np.double(positionVectorCartesian[1])
     z = np.double(positionVectorCartesian[2])
     #Calculate output vertical coordinate
     Z = (sqrt(x**2 + y**2 + z**2) - np.double(surfaceRadius))
-    #If the South pole coordinates are specified, rotate the inputi
+    #If the South pole coordinates are specified, rotate the input
     # coordinate basis.
     if southPoleCoordinates != None:
         [x,y,z] = rotateCartesianBasis([x,y,z], southPoleCoordinates)
-    #Convert Cartesian coordinates into unit-sphere Cartesian Coordinates
-    x = x/(2.*np.double(surfaceRadius))
-    y = y/(2.*np.double(surfaceRadius))
-    z = z/(2.*np.double(surfaceRadius))
-    #Convert unit-diameter-sphere cordinates into polar stereographic, carefull with
-    # the South pole.
-    if z <= -np.double(0.5):
+    # If the normalise variable is set to True, convert the input Cartesian
+    # coordinates into unit-sphere Cartesian Coordinates.
+    if normalise:
+        x = x/(2.*np.double(surfaceRadius))
+        y = y/(2.*np.double(surfaceRadius))
+        z = z/(2.*np.double(surfaceRadius))
+        surfaceRadius = 0.5
+    #Convert unit-diameter-sphere cordinates into polar stereographic,
+    # carefull with the South pole.
+    if z <= -np.double(surfaceRadius):
         X = np.nan
         Y = np.nan
     else:
-        X = (x/(z + 0.5))
-        Y = (y/(z + 0.5))
+        X = 2.0*surfaceRadius*x/(z + surfaceRadius)
+        Y = 2.0*surfaceRadius*y/(z + surfaceRadius)
     return np.double([X,Y,Z])
 
 def rotateCartesianBasis(positionVectorCartesian, southPoleCoordinates):
@@ -124,10 +142,16 @@ def rotateCartesianBasis(positionVectorCartesian, southPoleCoordinates):
     rotatedCoords = np.dot(rotationMatrix, np.array(positionVectorCartesian))
     return rotatedCoords.tolist()
 
-def lonlatradius_2_polarStereographic(positionVectorLonLatRad, surfaceRadius=6.37101e+06, southPoleCoordinates=None):
-    '''Convert longitude-latitude-radial coordinates on the surface of the Earth (in degrees) to polar stereographic, where the stereographic plane is tangent to the north pole. The output coordinates are also normalised with the sphere diameter.'''
+def lonlatradius_2_polarStereographic(positionVectorLonLatRad, surfaceRadius=6.37101e+06, southPoleCoordinates=None, normalise=True):
+    '''Convert longitude-latitude-radial coordinates (in degrees) to polar stereographic.
+
+    The stereographic plane is tangent to the north pole. The input
+    coordinates are also normalised with the sphere diameter, unless the
+    normalise variable is set to False. If the southPoleCoordinates
+    argument is specified the input coordinates basis is rotated.
+    '''
     [x,y,z] = lonlatradius_2_cartesian(positionVectorLonLatRad)
-    [X,Y,Z] = cartesian_2_polarStereographic([x,y,z], surfaceRadius, southPoleCoordinates)
+    [X,Y,Z] = cartesian_2_polarStereographic([x,y,z], surfaceRadius, southPoleCoordinates, normalise=normalise)
     return [X,Y,Z]
 
 def cartesian_2_unitDisk(positionVectorCartesian, surfaceRadius=6.37101e+06, southPoleCoordinates=None):
